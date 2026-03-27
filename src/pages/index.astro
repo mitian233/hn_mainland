@@ -1,4 +1,22 @@
 ---
+import { fetchTopStories } from '../lib/hn';
+
+const stories = await fetchTopStories(50);
+
+const formatTime = (timestamp: number) =>
+	new Intl.DateTimeFormat('en', {
+		dateStyle: 'medium',
+		timeStyle: 'short',
+	}).format(new Date(timestamp * 1000));
+
+const getDomain = (url?: string) => {
+	if (!url) return 'news.ycombinator.com';
+	try {
+		return new URL(url).hostname.replace(/^www\./, '');
+	} catch {
+		return 'news.ycombinator.com';
+	}
+};
 
 ---
 
@@ -9,9 +27,23 @@
 		<link rel="icon" href="/favicon.ico" />
 		<meta name="viewport" content="width=device-width" />
 		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
+		<title>Hacker News Top Stories</title>
 	</head>
 	<body>
-		<h1>Astro</h1>
+		<h1>Hacker News Top Stories</h1>
+		<ol>
+			{stories.map((story) => {
+				const href = story.url ?? `https://news.ycombinator.com/item?id=${story.id}`;
+				return (
+					<li>
+						<a href={href}>{story.title}</a>
+						<br />
+						<small>
+							{story.score} points by {story.by} {formatTime(story.time)} | {getDomain(story.url)}
+						</small>
+					</li>
+				);
+			})}
+		</ol>
 	</body>
 </html>
